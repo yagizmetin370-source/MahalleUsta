@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+{% block title %}{{ provider.full_name }} – MahalleUsta{% endblock %}
+{% block meta_description %}{{ provider.full_name }} – {{ categories.get(provider.category, '') }}, {{ provider.neighborhood }}, {{ provider.district }}. MahalleUsta'da güvenilir hizmet.{% endblock %}
+{% block content %}
+<div class="detail-page">
+
+  <!-- Hero -->
+  <div class="detail-hero">
+    <div class="detail-hero-inner">
+      {% if provider.profile_photo and provider.profile_photo != 'default.png' %}
+      <img class="detail-avatar" src="{{ url_for('static', filename='uploads/' + provider.profile_photo) }}" alt="{{ provider.full_name }}">
+      {% else %}
+      <div class="detail-avatar-placeholder">{{ provider.full_name[0].upper() }}</div>
+      {% endif %}
+
+      <div class="detail-info">
+        <h1 class="detail-name">{{ provider.full_name }}</h1>
+        <div class="tag-row">
+          <span class="tag tag-blue"><i class="fas fa-tools"></i> {{ categories.get(provider.category, provider.category) }}</span>
+          <span class="tag tag-gray"><i class="fas fa-map-marker-alt"></i> {{ provider.neighborhood }}, {{ provider.district }}, {{ provider.city }}</span>
+          {% if provider.is_verified %}<span class="tag tag-green"><i class="fas fa-shield-alt"></i> Doğrulanmış</span>{% endif %}
+          {% if provider.is_approved %}<span class="tag tag-accent"><i class="fas fa-check"></i> Onaylı</span>{% endif %}
+        </div>
+        <div class="detail-stars">
+          {% for i in range(1,6) %}<span class="star {{ 'filled' if i <= provider.avg_rating }}">★</span>{% endfor %}
+          <span class="rating-text">
+            {{ '%.1f'|format(provider.avg_rating) if provider.avg_rating else 'Henüz değerlendirme yok' }}
+            {% if provider.review_count %} &bull; {{ provider.review_count }} yorum{% endif %}
+          </span>
+        </div>
+        <div class="detail-kpi">
+          <div class="kpi"><div class="kpi-num">{{ '%.1f'|format(provider.avg_rating) if provider.avg_rating else '–' }}</div><div class="kpi-label">Ort. Puan</div></div>
+          <div class="kpi"><div class="kpi-num">{{ provider.review_count }}</div><div class="kpi-label">Yorum</div></div>
+          <div class="kpi"><div class="kpi-num">{{ provider.total_services }}</div><div class="kpi-label">Hizmet</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="detail-body">
+
+    <!-- Main -->
+    <div>
+      {% if provider.description %}
+      <div class="card">
+        <div class="card-header"><i class="fas fa-info-circle"></i><h3>Hakkında</h3></div>
+        <div class="card-body">
+          <p style="color:var(--gray-600);line-height:1.75;">{{ provider.description }}</p>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Reviews -->
+      <div class="card">
+        <div class="card-header">
+          <i class="fas fa-star" style="color:var(--accent);"></i>
+          <h3>Yorumlar {% if provider.review_count %}<span style="color:var(--gray-400);font-weight:400;">({{ provider.review_count }})</span>{% endif %}</h3>
+        </div>
+        <div class="card-body">
+          {% if provider.reviews %}
+            {% for review in provider.reviews | sort(attribute='created_at', reverse=True) %}
+            <div class="review-item">
+              <div class="review-top">
+                <div class="review-author">
+                  <div class="review-author-avatar">{{ review.author.username[0].upper() }}</div>
+                  <div>
+                    <div>{{ review.author.username }}</div>
+                    <div class="stars" style="margin-top:2px;">
+                      {% for i in range(1,6) %}<span class="star {{ 'filled' if i <= review.rating }}" style="font-size:0.8rem;">★</span>{% endfor %}
+                    </div>
+                  </div>
+                </div>
+                <div class="review-meta">
+                  <div class="review-date">{{ review.created_at.strftime('%d.%m.%Y') }}</div>
+                </div>
+              </div>
+              {% if review.comment %}
+              <p class="review-text">{{ review.comment }}</p>
+              {% endif %}
+            </div>
+            {% endfor %}
+          {% else %}
+          <div style="text-align:center;padding:36px;color:var(--gray-400);">
+            <i class="fas fa-comment-slash" style="font-size:2.5rem;margin-bottom:14px;display:block;"></i>
+            Henüz yorum yapılmamış. İlk yorumu siz yazın!
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Write review -->
+      {% if current_user.is_authenticated and not user_reviewed and current_user.id != provider.user_id %}
+      <div class="card">
+        <div class="card-header"><i class="fas fa-edit"></i><h3>Yorum Yap</h3></div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('main.add_review', provider_id=provider.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+              <label class="form-label">Puanınız</label>
+              <div class="star-input">
+                {% for i in range(5,0,-1) %}
+                <input type="radio" id="s{{ i }}" name="rating" value="{{ i }}" {{ 'required' if i==5 }}>
+                <label for="s{{ i }}" title="{{ i }} yıldız">★</label>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Yorumunuz</label>
+              <textarea name="comment" class="form-control" rows="3" placeholder="Deneyiminizi paylaşın..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+              <i class="fas fa-paper-plane"></i> Yorum Gönder
+            </button>
+          </form>
+        </div>
+      </div>
+      {% elif user_reviewed %}
+      <div class="alert alert-info"><i class="fas fa-check-circle"></i> Bu usta için zaten yorum yaptınız.</div>
+      {% elif not current_user.is_authenticated %}
+      <div class="alert alert-warning">
+        <i class="fas fa-lock"></i>
+        Yorum yapmak için <a href="{{ url_for('auth.login') }}" class="form-link">giriş yapın</a>.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div>
+      <div class="card" style="position:sticky;top:82px;">
+        <div class="card-header"><i class="fas fa-address-card"></i><h3>İletişim</h3></div>
+        <div class="card-body">
+          <div class="contact-row">
+            <div class="contact-icon"><i class="fas fa-phone"></i></div>
+            <div>
+              <div class="contact-label">Telefon</div>
+              <div class="contact-value"><a href="tel:{{ provider.phone }}">{{ provider.phone }}</a></div>
+            </div>
+          </div>
+          <div class="contact-row">
+            <div class="contact-icon"><i class="fas fa-map-marker-alt"></i></div>
+            <div>
+              <div class="contact-label">Mahalle</div>
+              <div class="contact-value">{{ provider.neighborhood }}, {{ provider.district }}</div>
+            </div>
+          </div>
+          <div class="contact-row">
+            <div class="contact-icon"><i class="fas fa-city"></i></div>
+            <div>
+              <div class="contact-label">Şehir</div>
+              <div class="contact-value">{{ provider.city }}</div>
+            </div>
+          </div>
+          <div class="contact-row">
+            <div class="contact-icon"><i class="fas fa-tools"></i></div>
+            <div>
+              <div class="contact-label">Uzmanlık</div>
+              <div class="contact-value">{{ categories.get(provider.category, provider.category) }}</div>
+            </div>
+          </div>
+
+          <a href="tel:{{ provider.phone }}" class="btn btn-primary w-100 mt-3">
+            <i class="fas fa-phone"></i> Hemen Ara
+          </a>
+          <a href="https://wa.me/90{{ provider.phone | replace(' ','') | replace('-','') | replace('+90','') | replace('(','') | replace(')','') }}"
+             target="_blank" rel="noopener"
+             class="btn w-100 mt-2" style="background:#25d366;color:white;border-color:#25d366;">
+            <i class="fab fa-whatsapp"></i> WhatsApp
+          </a>
+
+          {% if provider.is_verified %}
+          <div style="text-align:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--gray-100);">
+            <span style="display:inline-flex;align-items:center;gap:6px;color:var(--success);font-size:0.85rem;font-weight:600;">
+              <i class="fas fa-shield-alt"></i> Doğrulanmış Hesap
+            </span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

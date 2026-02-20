@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% block title %}Profili Düzenle – MahalleUsta{% endblock %}
+{% block content %}
+<div class="form-page">
+  <div class="form-card form-card-wide" style="margin:auto;">
+    <div class="form-card-header">
+      <img src="{{ url_for('static', filename='logo_nav.png') }}" alt="MahalleUsta" class="form-logo">
+      <h2 class="form-title">Profili Düzenle</h2>
+      <p class="form-subtitle">Bilgilerinizi güncel tutun</p>
+    </div>
+    <form method="POST" action="{{ url_for('provider.edit_profile') }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-grid-2">
+        <div class="form-group form-grid-full">
+          <label class="form-label">Ad Soyad <span class="required">*</span></label>
+          <input type="text" name="full_name" class="form-control" value="{{ provider.full_name }}" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kategori</label>
+          <select name="category" class="form-control">
+            {% for val, label in categories %}
+            <option value="{{ val }}" {{ 'selected' if val == provider.category }}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Telefon</label>
+          <input type="tel" name="phone" class="form-control" value="{{ provider.phone }}">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Şehir</label>
+          <select name="city" id="city" class="form-control">
+            {% for city in cities.keys() %}
+            <option value="{{ city }}" {{ 'selected' if city == provider.city }}>{{ city }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">İlçe</label>
+          <select name="district" id="district" class="form-control">
+            {% if provider.city %}
+              {% for d in cities.get(provider.city, {}).keys() %}
+              <option value="{{ d }}" {{ 'selected' if d == provider.district }}>{{ d }}</option>
+              {% endfor %}
+            {% endif %}
+          </select>
+        </div>
+        <div class="form-group form-grid-full">
+          <label class="form-label">Mahalle</label>
+          <select name="neighborhood" id="neighborhood" class="form-control">
+            {% if provider.city and provider.district %}
+              {% for n in cities.get(provider.city, {}).get(provider.district, []) %}
+              <option value="{{ n }}" {{ 'selected' if n == provider.neighborhood }}>{{ n }}</option>
+              {% endfor %}
+            {% endif %}
+          </select>
+        </div>
+        <div class="form-group form-grid-full">
+          <label class="form-label">Açıklama</label>
+          <textarea name="description" class="form-control" rows="4">{{ provider.description or '' }}</textarea>
+        </div>
+        <div class="form-group form-grid-full">
+          <label class="form-label">Profil Fotoğrafı</label>
+          {% if provider.profile_photo and provider.profile_photo != 'default.png' %}
+          <img id="photoPreview" src="{{ url_for('static', filename='uploads/' + provider.profile_photo) }}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--gray-200);margin-bottom:12px;display:block;">
+          {% else %}
+          <img id="photoPreview" src="" style="display:none;width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--gray-200);margin-bottom:12px;">
+          {% endif %}
+          <input type="file" id="photo" name="photo" class="form-control" accept="image/*">
+        </div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">
+          <i class="fas fa-save"></i> Değişiklikleri Kaydet
+        </button>
+        <a href="{{ url_for('provider.dashboard') }}" class="btn btn-gray">İptal</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

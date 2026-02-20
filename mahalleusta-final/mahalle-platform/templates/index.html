@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+{% block title %}MahalleUsta – Mahallenizin Güvenilir Ustalarını Bulun{% endblock %}
+{% block content %}
+
+<!-- ══ HERO ══════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-content">
+
+    <!-- Left -->
+    <div class="hero-left">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        Türkiye'nin Mahalle Hizmet Platformu
+      </div>
+      <h1 class="hero-title">
+        Güvenilir Ustayı<br>
+        <span class="highlight">Hemen Yanınızda</span><br>
+        <span class="underline-text">Bulun</span>
+      </h1>
+      <p class="hero-subtitle">
+        Elektrikçiden özel ders hocasına, tesisatçıdan temizlikçiye – mahallenizin onaylı uzmanları tek platformda, anında ulaşabilirsiniz.
+      </p>
+
+      <form class="hero-search-box" id="heroSearchForm">
+        <i class="fas fa-search"></i>
+        <input type="text" id="heroSearchInput" placeholder="Elektrikçi, tesisatçı, boyacı... ne arıyorsunuz?">
+        <button type="submit" class="btn btn-accent btn-lg" style="border-radius: var(--radius); padding: 11px 24px;">Ara</button>
+      </form>
+
+      <div class="hero-tags">
+        {% for val, label in categories[:7] %}
+        <span class="hero-tag" onclick="window.location='/search?category={{ val }}'">{{ label }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-num" data-count="{{ total_providers }}">{{ total_providers }}</div>
+          <div class="hero-stat-label">Hizmet Veren</div>
+        </div>
+        <div class="hero-stat-div"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-num" data-count="{{ total_users }}">{{ total_users }}</div>
+          <div class="hero-stat-label">Kayıtlı Üye</div>
+        </div>
+        <div class="hero-stat-div"></div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">%98</div>
+          <div class="hero-stat-label">Memnuniyet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Floating cards preview -->
+    <div class="hero-right">
+      {% if featured %}
+        {% for p in featured[:3] %}
+        <a href="{{ url_for('main.provider_detail', provider_id=p.id) }}" class="hero-card" style="animation-delay: {{ loop.index0 * 0.12 }}s;">
+          <div class="hero-card-head">
+            {% if p.profile_photo and p.profile_photo != 'default.png' %}
+            <img class="provider-avatar" src="{{ url_for('static', filename='uploads/' + p.profile_photo) }}" alt="{{ p.full_name }}" style="width:46px;height:46px;">
+            {% else %}
+            <div class="hero-card-avatar">{{ p.full_name[0].upper() }}</div>
+            {% endif %}
+            <div>
+              <div class="hero-card-name">{{ p.full_name }}</div>
+              <div class="hero-card-cat">{% for v,l in categories if v == p.category %}{{ l }}{% endfor %}</div>
+            </div>
+          </div>
+          <div class="hero-card-stars">{% for i in range(1,6) %}{{ '★' if i <= p.avg_rating else '☆' }}{% endfor %}</div>
+          <div class="hero-card-loc"><i class="fas fa-map-marker-alt"></i>{{ p.neighborhood }}, {{ p.district }}</div>
+          {% if p.is_verified %}<div class="hero-verified"><i class="fas fa-check-circle"></i> Doğrulanmış</div>{% endif %}
+        </a>
+        {% endfor %}
+      {% else %}
+        <div class="hero-card">
+          <div class="hero-card-head">
+            <div class="hero-card-avatar">A</div>
+            <div><div class="hero-card-name">Ahmet Yılmaz</div><div class="hero-card-cat">⚡ Elektrikçi</div></div>
+          </div>
+          <div class="hero-card-stars">★★★★★</div>
+          <div class="hero-card-loc"><i class="fas fa-map-marker-alt"></i> Kızılay, Çankaya</div>
+          <div class="hero-verified"><i class="fas fa-check-circle"></i> Doğrulanmış</div>
+        </div>
+        <div class="hero-card">
+          <div class="hero-card-head">
+            <div class="hero-card-avatar" style="background: linear-gradient(135deg,#10b981,#059669)">M</div>
+            <div><div class="hero-card-name">Mehmet Demir</div><div class="hero-card-cat">🔧 Tesisatçı</div></div>
+          </div>
+          <div class="hero-card-stars">★★★★☆</div>
+          <div class="hero-card-loc"><i class="fas fa-map-marker-alt"></i> Etlik, Keçiören</div>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</section>
+
+<!-- ══ TRUST BAR ═══════════════════════════════════════════ -->
+<div class="trust-bar">
+  <div class="trust-bar-inner">
+    <div class="trust-item"><i class="fas fa-shield-alt"></i> Admin Onaylı Ustalar</div>
+    <div class="trust-item"><i class="fas fa-star"></i> Gerçek Kullanıcı Yorumları</div>
+    <div class="trust-item"><i class="fas fa-map-marker-alt"></i> Mahalle Bazlı Arama</div>
+    <div class="trust-item"><i class="fas fa-phone"></i> Doğrudan İletişim</div>
+    <div class="trust-item"><i class="fas fa-lock"></i> Güvenli Platform</div>
+  </div>
+</div>
+
+<!-- ══ CATEGORIES ══════════════════════════════════════════ -->
+<section class="section section-white">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">14 Kategori</div>
+      <h2 class="section-title">İhtiyacınıza Uygun Hizmeti Seçin</h2>
+      <p class="section-subtitle">Her türlü ev ve işyeri ihtiyacınız için uzman hizmet verenleri bulun</p>
+    </div>
+    <div class="category-grid">
+      {% for val, label in categories %}
+      <a href="{{ url_for('main.search', category=val) }}" class="category-card anim-up">
+        <span class="category-icon">{{ label.split(' ')[0] }}</span>
+        <div class="category-name">{{ label.split(' ', 1)[1] if ' ' in label else label }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ══ FEATURED PROVIDERS ══════════════════════════════════ -->
+{% if featured %}
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Öne Çıkanlar</div>
+      <h2 class="section-title">Güvenilir Hizmet Verenler</h2>
+      <p class="section-subtitle">Kullanıcılarımızın en çok tercih ettiği ve en yüksek puana sahip ustalar</p>
+    </div>
+    <div class="providers-grid">
+      {% for p in featured %}
+      <a href="{{ url_for('main.provider_detail', provider_id=p.id) }}" class="provider-card anim-up">
+        <div class="provider-card-header">
+          {% if p.profile_photo and p.profile_photo != 'default.png' %}
+          <img class="provider-avatar" src="{{ url_for('static', filename='uploads/' + p.profile_photo) }}" alt="{{ p.full_name }}">
+          {% else %}
+          <div class="provider-avatar-placeholder">{{ p.full_name[0].upper() }}</div>
+          {% endif %}
+          <div class="provider-card-info">
+            <div class="provider-card-name">{{ p.full_name }}</div>
+            <div class="provider-card-cat">{% for v,l in categories if v == p.category %}{{ l }}{% endfor %}</div>
+            {% if p.is_verified %}<span class="badge-verified"><i class="fas fa-check-circle"></i> Doğrulanmış</span>{% endif %}
+          </div>
+        </div>
+        <div class="provider-card-body">
+          <div class="provider-location"><i class="fas fa-map-marker-alt"></i> {{ p.neighborhood }}, {{ p.district }}, {{ p.city }}</div>
+          <div class="provider-desc">{{ p.description or 'Profesyonel ve kaliteli hizmet için iletişime geçin.' }}</div>
+          <div class="provider-card-footer">
+            <div class="stars">
+              {% for i in range(1,6) %}<span class="star {{ 'filled' if i <= p.avg_rating }}">★</span>{% endfor %}
+              <span class="rating-text">{{ '%.1f'|format(p.avg_rating) if p.avg_rating else '–' }}</span>
+            </div>
+            <span class="review-count"><i class="fas fa-comment-alt" style="margin-right:3px;"></i>{{ p.review_count }}</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+      <a href="{{ url_for('main.search') }}" class="btn btn-outline btn-lg">
+        <i class="fas fa-th-large"></i> Tüm Ustaları Gör
+      </a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- ══ HOW IT WORKS ═════════════════════════════════════════ -->
+<section class="section section-white">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-label">Nasıl Çalışır?</div>
+      <h2 class="section-title">3 Adımda Ustanı Bul</h2>
+      <p class="section-subtitle">Basit, hızlı ve güvenilir bir süreç</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step anim-up">
+        <div class="step-num">1</div>
+        <h3>Ara & Filtrele</h3>
+        <p>Kategoriye veya mahalleye göre filtrele. İstanbul, Ankara, İzmir ve daha fazla şehirde hizmet veren bulun.</p>
+      </div>
+      <div class="step anim-up" style="transition-delay:0.1s">
+        <div class="step-num" style="background: linear-gradient(135deg, var(--accent), var(--accent-dark));">2</div>
+        <h3>Karşılaştır</h3>
+        <p>Gerçek kullanıcı yorumlarını ve puanları incele. Doğrulanmış ve onaylı ustalar arasından en iyisini seç.</p>
+      </div>
+      <div class="step anim-up" style="transition-delay:0.2s">
+        <div class="step-num" style="background: linear-gradient(135deg, var(--success), #059669);">3</div>
+        <h3>İletişim Kur</h3>
+        <p>Telefon veya WhatsApp ile doğrudan ustayla iletişime geç. Hizmet al, sonra yorum yap.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ CTA ══════════════════════════════════════════════════ -->
+<section class="cta-section">
+  <h2>Siz de Hizmet Vermek İster misiniz?</h2>
+  <p>Ücretsiz profil oluşturun, mahallenizden binlerce potansiyel müşteriye ulaşın.</p>
+  <div class="cta-btns">
+    <a href="{{ url_for('provider.become_provider') }}" class="btn btn-accent btn-xl">
+      <i class="fas fa-hard-hat"></i> Hizmet Veren Ol
+    </a>
+    <a href="{{ url_for('auth.register') }}" class="btn btn-outline-white btn-xl">
+      <i class="fas fa-user-plus"></i> Üye Ol
+    </a>
+  </div>
+</section>
+
+{% endblock %}

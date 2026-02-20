@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block title %}Kullanıcılar – Admin{% endblock %}
+{% block content %}
+<div class="admin-page">
+  <div class="admin-topbar">
+    <div class="admin-topbar-inner">
+      <h1><i class="fas fa-users"></i> Kullanıcılar</h1>
+      <p>Tüm platform kullanıcılarını yönetin</p>
+    </div>
+  </div>
+  <div class="admin-body">
+    <div class="admin-subnav">
+      <a href="{{ url_for('admin.admin_index') }}"><i class="fas fa-home"></i> Genel Bakış</a>
+      <a href="{{ url_for('admin.admin_providers') }}"><i class="fas fa-hard-hat"></i> Hizmet Verenler</a>
+      <a href="{{ url_for('admin.admin_users') }}" class="active"><i class="fas fa-users"></i> Kullanıcılar</a>
+      <a href="{{ url_for('admin.admin_reviews') }}"><i class="fas fa-star"></i> Yorumlar</a>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>Kullanıcı</th><th>E-posta</th><th>Kayıt</th><th>Rol</th><th>Durum</th><th>İşlem</th></tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy-mid));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.88rem;flex-shrink:0;">{{ u.username[0].upper() }}</div>
+                <strong>{{ u.username }}</strong>
+              </div>
+            </td>
+            <td style="color:var(--gray-600);font-size:0.88rem;">{{ u.email }}</td>
+            <td style="color:var(--gray-500);font-size:0.82rem;">{{ u.created_at.strftime('%d.%m.%Y') }}</td>
+            <td>
+              {% if u.is_admin %}<span class="badge badge-danger"><i class="fas fa-shield-alt"></i> Admin</span>
+              {% elif u.provider %}<span class="badge badge-info"><i class="fas fa-hard-hat"></i> Usta</span>
+              {% else %}<span class="badge badge-gray"><i class="fas fa-user"></i> Kullanıcı</span>{% endif %}
+            </td>
+            <td>
+              {% if u.is_active %}<span class="badge badge-success"><i class="fas fa-circle" style="font-size:0.5rem;"></i> Aktif</span>
+              {% else %}<span class="badge badge-danger"><i class="fas fa-ban"></i> Askıda</span>{% endif %}
+            </td>
+            <td>
+              {% if not u.is_admin %}
+              <form method="POST" action="{{ url_for('admin.toggle_user', uid=u.id) }}" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm {{ 'btn-danger' if u.is_active else 'btn-success' }}">
+                  <i class="fas fa-{{ 'ban' if u.is_active else 'check' }}"></i>
+                  {{ 'Askıya Al' if u.is_active else 'Aktifleştir' }}
+                </button>
+              </form>
+              {% else %}<span style="color:var(--gray-400);font-size:0.82rem;">–</span>{% endif %}
+            </td>
+          </tr>
+          {% else %}
+          <tr class="data-table-empty"><td colspan="6">Kullanıcı yok.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

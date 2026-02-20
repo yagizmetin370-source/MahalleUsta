@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Usta Ara – MahalleUsta{% endblock %}
+{% block content %}
+<div class="search-page">
+
+  <div class="search-hero">
+    <div style="max-width:1280px;margin:0 auto;">
+      <h1><i class="fas fa-search" style="color:var(--accent);margin-right:12px;font-size:1.6rem;"></i>Usta Ara</h1>
+      <form method="GET" action="{{ url_for('main.search') }}">
+        <div class="search-filters">
+          <div>
+            <label class="filter-label">Arama</label>
+            <input type="text" name="q" value="{{ q }}" class="filter-control" placeholder="İsim ile ara...">
+          </div>
+          <div>
+            <label class="filter-label">Kategori</label>
+            <select name="category" class="filter-control">
+              <option value="">Tüm Kategoriler</option>
+              {% for val, label in categories %}
+              <option value="{{ val }}" {{ 'selected' if val == selected_category }}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="filter-label">Şehir</label>
+            <select name="city" id="city" class="filter-control">
+              <option value="">Tüm Şehirler</option>
+              {% for city in cities.keys() %}
+              <option value="{{ city }}" {{ 'selected' if city == selected_city }}>{{ city }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="filter-label">İlçe</label>
+            <select name="district" id="district" class="filter-control">
+              <option value="">Tüm İlçeler</option>
+              {% if selected_city %}
+                {% for d in cities.get(selected_city, {}).keys() %}
+                <option value="{{ d }}" {{ 'selected' if d == selected_district }}>{{ d }}</option>
+                {% endfor %}
+              {% endif %}
+            </select>
+          </div>
+          <div style="align-self:flex-end;">
+            <button type="submit" class="btn btn-accent" style="height:44px;padding:0 20px;">
+              <i class="fas fa-search"></i> Ara
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="search-results">
+    <div class="results-meta">
+      <p class="results-count">
+        <strong>{{ providers|length }}</strong> sonuç bulundu
+        {% if q %} – "<em>{{ q }}</em>" için{% endif %}
+        {% if selected_category %} – {{ selected_category }} kategorisinde{% endif %}
+      </p>
+      {% if q or selected_category or selected_city %}
+      <a href="{{ url_for('main.search') }}" class="results-clear">
+        <i class="fas fa-times"></i> Filtreleri Temizle
+      </a>
+      {% endif %}
+    </div>
+
+    {% if providers %}
+    <div class="providers-grid">
+      {% for p in providers %}
+      <a href="{{ url_for('main.provider_detail', provider_id=p.id) }}" class="provider-card anim-up">
+        <div class="provider-card-header">
+          {% if p.profile_photo and p.profile_photo != 'default.png' %}
+          <img class="provider-avatar" src="{{ url_for('static', filename='uploads/' + p.profile_photo) }}" alt="{{ p.full_name }}">
+          {% else %}
+          <div class="provider-avatar-placeholder">{{ p.full_name[0].upper() }}</div>
+          {% endif %}
+          <div class="provider-card-info">
+            <div class="provider-card-name">{{ p.full_name }}</div>
+            <div class="provider-card-cat">{% for v,l in categories if v == p.category %}{{ l }}{% endfor %}</div>
+            {% if p.is_verified %}<span class="badge-verified"><i class="fas fa-check-circle"></i> Doğrulanmış</span>{% endif %}
+          </div>
+        </div>
+        <div class="provider-card-body">
+          <div class="provider-location"><i class="fas fa-map-marker-alt"></i> {{ p.neighborhood }}, {{ p.district }}, {{ p.city }}</div>
+          <div class="provider-desc">{{ p.description or 'Profesyonel hizmet için iletişime geçin.' }}</div>
+          <div class="provider-card-footer">
+            <div class="stars">
+              {% for i in range(1,6) %}<span class="star {{ 'filled' if i <= p.avg_rating }}">★</span>{% endfor %}
+              <span class="rating-text">{{ '%.1f'|format(p.avg_rating) if p.avg_rating else '–' }}</span>
+            </div>
+            <span class="review-count"><i class="fas fa-comment-alt" style="margin-right:3px;"></i>{{ p.review_count }} yorum</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <h3>Sonuç Bulunamadı</h3>
+      <p>Farklı filtreler deneyin veya tüm ustaları görüntüleyin.</p>
+      <a href="{{ url_for('main.search') }}" class="btn btn-primary">
+        <i class="fas fa-redo"></i> Tüm Ustaları Gör
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Admin Paneli – MahalleUsta{% endblock %}
+{% block content %}
+<div class="admin-page">
+  <div class="admin-topbar">
+    <div class="admin-topbar-inner">
+      <h1><i class="fas fa-shield-alt"></i> Admin Paneli</h1>
+      <p>MahalleUsta yönetim merkezi – {{ current_user.username }}</p>
+    </div>
+  </div>
+
+  <div class="admin-body">
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon icon-blue"><i class="fas fa-users"></i></div>
+        <div><div class="kpi-num" data-count="{{ total_users }}">{{ total_users }}</div><div class="kpi-label">Toplam Kullanıcı</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon icon-green"><i class="fas fa-hard-hat"></i></div>
+        <div><div class="kpi-num" data-count="{{ total_providers }}">{{ total_providers }}</div><div class="kpi-label">Hizmet Veren</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon icon-yellow"><i class="fas fa-clock"></i></div>
+        <div><div class="kpi-num" data-count="{{ pending }}">{{ pending }}</div><div class="kpi-label">Onay Bekleyen</div></div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon icon-red"><i class="fas fa-star"></i></div>
+        <div><div class="kpi-num" data-count="{{ total_reviews }}">{{ total_reviews }}</div><div class="kpi-label">Toplam Yorum</div></div>
+      </div>
+    </div>
+
+    <div class="admin-subnav">
+      <a href="{{ url_for('admin.admin_index') }}" class="active"><i class="fas fa-home"></i> Genel Bakış</a>
+      <a href="{{ url_for('admin.admin_providers') }}"><i class="fas fa-hard-hat"></i> Hizmet Verenler {% if pending %}<span class="badge badge-warning">{{ pending }}</span>{% endif %}</a>
+      <a href="{{ url_for('admin.admin_users') }}"><i class="fas fa-users"></i> Kullanıcılar</a>
+      <a href="{{ url_for('admin.admin_reviews') }}"><i class="fas fa-star"></i> Yorumlar</a>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><i class="fas fa-chart-bar"></i><h3>Hızlı Erişim</h3></div>
+      <div class="card-body" style="text-align:center;padding:48px;color:var(--gray-500);">
+        {% if pending > 0 %}
+        <div class="alert alert-warning" style="display:inline-flex;margin-bottom:24px;">
+          <i class="fas fa-exclamation-triangle"></i>
+          <strong>{{ pending }} hizmet veren</strong>&nbsp;admin onayı bekliyor!
+        </div>
+        <br>
+        <a href="{{ url_for('admin.admin_providers') }}" class="btn btn-accent btn-lg">
+          <i class="fas fa-check-circle"></i> Onay Bekleyenleri Gör
+        </a>
+        {% else %}
+        <i class="fas fa-check-circle" style="font-size:3rem;color:var(--success);margin-bottom:16px;display:block;"></i>
+        <h3 style="color:var(--navy);margin-bottom:8px;">Her Şey Yolunda!</h3>
+        <p>Onay bekleyen hizmet veren yok.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

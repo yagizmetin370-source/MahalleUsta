@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Üye Ol – MahalleUsta{% endblock %}
+{% block content %}
+<div class="form-page">
+  <div class="form-card" style="margin:auto;">
+    <div class="form-card-header">
+      <img src="{{ url_for('static', filename='logo_nav.png') }}" alt="MahalleUsta" class="form-logo">
+      <h2 class="form-title">Üye Ol</h2>
+      <p class="form-subtitle">MahalleUsta'ya katılın, güvenilir ustaları bulun</p>
+    </div>
+    <form method="POST" action="{{ url_for('auth.register') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group">
+        <label class="form-label">Kullanıcı Adı <span class="required">*</span></label>
+        <input type="text" name="username" class="form-control" placeholder="kullanici_adi" required minlength="3" maxlength="80" autofocus>
+      </div>
+      <div class="form-group">
+        <label class="form-label">E-posta <span class="required">*</span></label>
+        <input type="email" name="email" class="form-control" placeholder="ornek@email.com" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Şifre <span class="required">*</span></label>
+        <input type="password" name="password" class="form-control" placeholder="En az 6 karakter" required minlength="6">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Şifre Tekrar <span class="required">*</span></label>
+        <input type="password" name="confirm_password" class="form-control" placeholder="Şifrenizi tekrar girin" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100 mt-2">
+        <i class="fas fa-user-plus"></i> Üye Ol
+      </button>
+    </form>
+    <div class="form-divider mt-3">veya</div>
+    <p class="text-center text-sm text-muted">
+      Zaten üye misiniz?
+      <a href="{{ url_for('auth.login') }}" class="form-link">Giriş Yap</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

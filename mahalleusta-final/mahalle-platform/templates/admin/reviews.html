@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Yorumlar – Admin{% endblock %}
+{% block content %}
+<div class="admin-page">
+  <div class="admin-topbar">
+    <div class="admin-topbar-inner">
+      <h1><i class="fas fa-star"></i> Yorumlar</h1>
+      <p>Tüm kullanıcı yorumlarını görüntüleyin ve yönetin</p>
+    </div>
+  </div>
+  <div class="admin-body">
+    <div class="admin-subnav">
+      <a href="{{ url_for('admin.admin_index') }}"><i class="fas fa-home"></i> Genel Bakış</a>
+      <a href="{{ url_for('admin.admin_providers') }}"><i class="fas fa-hard-hat"></i> Hizmet Verenler</a>
+      <a href="{{ url_for('admin.admin_users') }}"><i class="fas fa-users"></i> Kullanıcılar</a>
+      <a href="{{ url_for('admin.admin_reviews') }}" class="active"><i class="fas fa-star"></i> Yorumlar</a>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr><th>Yazan</th><th>Hizmet Veren</th><th>Puan</th><th>Yorum</th><th>Tarih</th><th>İşlem</th></tr>
+        </thead>
+        <tbody>
+          {% for r in reviews %}
+          <tr>
+            <td><strong>{{ r.author.username }}</strong></td>
+            <td><a href="{{ url_for('main.provider_detail', provider_id=r.provider_id) }}" style="color:var(--blue-light);font-weight:500;">{{ r.provider.full_name }}</a></td>
+            <td>
+              <div style="display:flex;gap:1px;">
+                {% for i in range(1,6) %}<span style="color:{{ 'var(--accent)' if i <= r.rating else 'var(--gray-200)' }};">★</span>{% endfor %}
+              </div>
+            </td>
+            <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--gray-500);font-size:0.85rem;">{{ r.comment or '–' }}</td>
+            <td style="color:var(--gray-400);font-size:0.8rem;">{{ r.created_at.strftime('%d.%m.%Y') }}</td>
+            <td>
+              <form method="POST" action="{{ url_for('admin.delete_review', rid=r.id) }}" style="display:inline;" onsubmit="return confirm('Bu yorum silinsin mi?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr class="data-table-empty"><td colspan="6">Henüz yorum yok.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

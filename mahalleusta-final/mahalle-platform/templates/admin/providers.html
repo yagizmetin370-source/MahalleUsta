@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block title %}Hizmet Verenler – Admin{% endblock %}
+{% block content %}
+<div class="admin-page">
+  <div class="admin-topbar">
+    <div class="admin-topbar-inner">
+      <h1><i class="fas fa-hard-hat"></i> Hizmet Verenler</h1>
+      <p>Kayıtlı tüm hizmet verenleri yönetin</p>
+    </div>
+  </div>
+  <div class="admin-body">
+    <div class="admin-subnav">
+      <a href="{{ url_for('admin.admin_index') }}"><i class="fas fa-home"></i> Genel Bakış</a>
+      <a href="{{ url_for('admin.admin_providers') }}" class="active"><i class="fas fa-hard-hat"></i> Hizmet Verenler</a>
+      <a href="{{ url_for('admin.admin_users') }}"><i class="fas fa-users"></i> Kullanıcılar</a>
+      <a href="{{ url_for('admin.admin_reviews') }}"><i class="fas fa-star"></i> Yorumlar</a>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Hizmet Veren</th>
+            <th>Kategori</th>
+            <th>Konum</th>
+            <th>Puan</th>
+            <th>Durum</th>
+            <th>İşlemler</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for p in providers %}
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:10px;">
+                {% if p.profile_photo and p.profile_photo != 'default.png' %}
+                <img src="{{ url_for('static', filename='uploads/' + p.profile_photo) }}" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;">
+                {% else %}
+                <div style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--blue-light),var(--accent));display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.9rem;flex-shrink:0;">{{ p.full_name[0].upper() }}</div>
+                {% endif %}
+                <div>
+                  <div style="font-weight:600;color:var(--navy);">{{ p.full_name }}</div>
+                  <div style="font-size:0.75rem;color:var(--gray-400);">@{{ p.user.username }}</div>
+                </div>
+              </div>
+            </td>
+            <td style="color:var(--gray-600);font-size:0.88rem;">{{ categories.get(p.category, p.category) }}</td>
+            <td style="font-size:0.85rem;color:var(--gray-500);">{{ p.neighborhood }}, {{ p.district }}, {{ p.city }}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:3px;">
+                <span style="color:var(--accent);">★</span>
+                <span style="font-weight:600;">{{ '%.1f'|format(p.avg_rating) if p.avg_rating else '–' }}</span>
+                <span style="color:var(--gray-400);font-size:0.78rem;">({{ p.review_count }})</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;flex-direction:column;gap:4px;">
+                {% if p.is_approved %}<span class="badge badge-success"><i class="fas fa-check"></i> Onaylı</span>
+                {% else %}<span class="badge badge-warning"><i class="fas fa-clock"></i> Beklemede</span>{% endif %}
+                {% if p.is_verified %}<span class="badge badge-info"><i class="fas fa-shield-alt"></i> Doğrulanmış</span>{% endif %}
+              </div>
+            </td>
+            <td>
+              <div class="action-group">
+                {% if not p.is_approved %}
+                <form method="POST" action="{{ url_for('admin.approve_provider', pid=p.id) }}" style="display:inline;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Onayla</button>
+                </form>
+                {% endif %}
+                <form method="POST" action="{{ url_for('admin.verify_provider', pid=p.id) }}" style="display:inline;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-gray btn-sm">
+                    <i class="fas fa-{{ 'times' if p.is_verified else 'shield-alt' }}"></i>
+                    {{ 'Doğrulamayı Kaldır' if p.is_verified else 'Doğrula' }}
+                  </button>
+                </form>
+                <a href="{{ url_for('main.provider_detail', provider_id=p.id) }}" class="btn btn-sm" style="background:var(--info-lite);color:var(--info);"><i class="fas fa-eye"></i></a>
+                <form method="POST" action="{{ url_for('admin.delete_provider', pid=p.id) }}" style="display:inline;" onsubmit="return confirm('Bu hizmet veren silinsin mi?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% else %}
+          <tr class="data-table-empty"><td colspan="6"><i class="fas fa-inbox" style="font-size:2rem;display:block;margin-bottom:10px;"></i>Kayıtlı hizmet veren yok.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}Hizmet Veren Ol – MahalleUsta{% endblock %}
+{% block content %}
+<div class="form-page">
+  <div class="form-card form-card-wide" style="margin:auto;">
+    <div class="form-card-header">
+      <img src="{{ url_for('static', filename='logo_nav.png') }}" alt="MahalleUsta" class="form-logo">
+      <h2 class="form-title">Hizmet Veren Profili Oluştur</h2>
+      <p class="form-subtitle">Ücretsiz profilinizi oluşturun, mahallenizden müşterilere ulaşın</p>
+    </div>
+    <form method="POST" action="{{ url_for('provider.become_provider') }}" enctype="multipart/form-data">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-grid-2">
+        <div class="form-group form-grid-full">
+          <label class="form-label">Ad Soyad <span class="required">*</span></label>
+          <input type="text" name="full_name" class="form-control" placeholder="Ahmet Yılmaz" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Hizmet Kategorisi <span class="required">*</span></label>
+          <select name="category" class="form-control" required>
+            <option value="">Kategori Seçin</option>
+            {% for val, label in categories %}
+            <option value="{{ val }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Telefon <span class="required">*</span></label>
+          <input type="tel" name="phone" class="form-control" placeholder="0532 123 45 67" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Şehir <span class="required">*</span></label>
+          <select name="city" id="city" class="form-control" required>
+            <option value="">Şehir Seçin</option>
+            {% for city in cities.keys() %}
+            <option value="{{ city }}">{{ city }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">İlçe <span class="required">*</span></label>
+          <select name="district" id="district" class="form-control" required>
+            <option value="">Önce şehir seçin</option>
+          </select>
+        </div>
+        <div class="form-group form-grid-full">
+          <label class="form-label">Mahalle <span class="required">*</span></label>
+          <select name="neighborhood" id="neighborhood" class="form-control" required>
+            <option value="">Önce ilçe seçin</option>
+          </select>
+        </div>
+        <div class="form-group form-grid-full">
+          <label class="form-label">Kendinizi Tanıtın</label>
+          <textarea name="description" class="form-control" rows="4" placeholder="Uzmanlık alanlarınız, deneyiminiz ve sunduğunuz hizmetler hakkında bilgi verin..."></textarea>
+        </div>
+        <div class="form-group form-grid-full">
+          <label class="form-label">Profil Fotoğrafı</label>
+          <input type="file" id="photo" name="photo" class="form-control" accept="image/*">
+          <p class="form-hint"><i class="fas fa-info-circle"></i> PNG, JPG, JPEG – Maks. 5MB. Profil fotoğrafı güveni artırır.</p>
+          <div class="photo-preview-wrap">
+            <img id="photoPreview" src="" alt="Önizleme">
+          </div>
+        </div>
+      </div>
+      <div class="alert alert-warning mt-2">
+        <i class="fas fa-clock"></i>
+        <span>Profiliniz, admin onayından sonra platformda yayınlanacaktır. Bu süreç genellikle 24 saat içinde tamamlanır.</span>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;">
+          <i class="fas fa-paper-plane"></i> Profil Oluştur
+        </button>
+        <a href="{{ url_for('main.index') }}" class="btn btn-gray">İptal</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
